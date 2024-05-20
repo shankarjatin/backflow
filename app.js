@@ -45,7 +45,7 @@ app.get('/api/insights', async (req, res) => {
   }
 });
 
-cron.schedule('*/10 * * * * *', () => {
+cron.schedule('*/1 * * * * *', () => {
     console.log('This message will be printed to the console every 10 seconds');
   });
   
