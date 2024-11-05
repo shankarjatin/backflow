@@ -4,6 +4,7 @@ const cors = require('cors');
 const cron = require('node-cron')
 const dotenv = require ('dotenv');
 const Insight = require('./models/Insight');
+const HotelData = require('./models/hotel')
 dotenv.config();
 
 const app = express();
@@ -44,6 +45,35 @@ app.get('/api/insights', async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 });
+
+
+app.post('/postData', async (req, res) => {
+  const data = req.body;
+
+  if (Array.isArray(data) && data.length > 0) {
+      try {
+          // Insert many documents into the collection
+          const result = await HotelData.insertMany(data);
+          res.status(200).send({ message: 'Data stored successfully', result });
+      } catch (error) {
+          res.status(500).send({ message: 'Error storing data', error });
+      }
+  } else {
+      res.status(400).send({ message: 'Invalid data format. Please provide an array of objects.' });
+  }
+});
+
+
+app.get('/api/hotels', async (req, res) => {
+  try {
+    const hotelData= await HotelData.find();
+    res.json(hotelData);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 
 cron.schedule('*/1 * * * * *', () => {
     console.log('This message will be printed to the console every 10 seconds');
