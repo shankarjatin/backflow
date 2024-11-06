@@ -4,6 +4,7 @@ const cors = require('cors');
 const cron = require('node-cron')
 const dotenv = require ('dotenv');
 const Insight = require('./models/Insight');
+const HotelData = require('./models/hotel')
 dotenv.config();
 
 const app = express();
@@ -44,6 +45,56 @@ app.get('/api/insights', async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 });
+
+
+app.post('/postData', async (req, res) => {
+  const data = req.body;
+
+  if (Array.isArray(data) && data.length > 0) {
+      try {
+          // Insert many documents into the collection
+          const result = await HotelData.insertMany(data);
+          res.status(200).send({ message: 'Data stored successfully', result });
+      } catch (error) {
+          res.status(500).send({ message: 'Error storing data', error });
+      }
+  } else {
+      res.status(400).send({ message: 'Invalid data format. Please provide an array of objects.' });
+  }
+});
+
+// Sample route to get filtered hotel data
+app.get('/api/hotel-data', async (req, res) => {
+  try {
+    // Replace with actual data retrieval logic
+    const HotelData1 = await HotelData.find(); // Assuming you use Mongoose
+
+    // Extract query parameters from request
+    const { year, month, day } = req.query;
+
+    // Check if HotelData is an array within an object
+    const dataArray = HotelData1.bookings || HotelData1.data || HotelData1.records || HotelData1; // Adjust according to your data structure
+
+    if (!Array.isArray(dataArray)) {
+      return res.status(500).send('Error: HotelData does not contain an array');
+    }
+
+    // Filter data based on the arrival date
+    const filteredData = dataArray.filter(booking =>
+      booking.arrival_date_year === parseInt(year) &&
+      booking.arrival_date_month === month &&
+      booking.arrival_date_day_of_month === parseInt(day)
+    );
+
+    // Send the filtered data as a response
+    res.json(filteredData);
+  } catch (error) {
+    console.error('Error fetching hotel data:', error);
+    res.status(500).send({ message: 'Error fetching data', error });
+  }
+});
+
+
 
 cron.schedule('*/1 * * * * *', () => {
     console.log('This message will be printed to the console every 10 seconds');
