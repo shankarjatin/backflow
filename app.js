@@ -63,16 +63,37 @@ app.post('/postData', async (req, res) => {
   }
 });
 
-
-app.get('/api/hotels', async (req, res) => {
+// Sample route to get filtered hotel data
+app.get('/api/hotel-data', async (req, res) => {
   try {
-    const hotelData= await HotelData.find();
-    res.json(hotelData);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server Error' });
+    // Replace with actual data retrieval logic
+    const HotelData1 = await HotelData.find(); // Assuming you use Mongoose
+
+    // Extract query parameters from request
+    const { year, month, day } = req.query;
+
+    // Check if HotelData is an array within an object
+    const dataArray = HotelData1.bookings || HotelData1.data || HotelData1.records || HotelData1; // Adjust according to your data structure
+
+    if (!Array.isArray(dataArray)) {
+      return res.status(500).send('Error: HotelData does not contain an array');
+    }
+
+    // Filter data based on the arrival date
+    const filteredData = dataArray.filter(booking =>
+      booking.arrival_date_year === parseInt(year) &&
+      booking.arrival_date_month === month &&
+      booking.arrival_date_day_of_month === parseInt(day)
+    );
+
+    // Send the filtered data as a response
+    res.json(filteredData);
+  } catch (error) {
+    console.error('Error fetching hotel data:', error);
+    res.status(500).send({ message: 'Error fetching data', error });
   }
 });
+
 
 
 cron.schedule('*/1 * * * * *', () => {
