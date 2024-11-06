@@ -5,6 +5,7 @@ const cron = require('node-cron')
 const dotenv = require ('dotenv');
 const Insight = require('./models/Insight');
 const HotelData = require('./models/hotel')
+const axios = require('axios');
 dotenv.config();
 
 const app = express();
@@ -96,10 +97,17 @@ app.get('/api/hotel-data', async (req, res) => {
 
 
 
-cron.schedule('*/1 * * * * *', () => {
-    console.log('This message will be printed to the console every 10 seconds');
-  });
-  
+cron.schedule('**/20 * * * * *', async () => {
+  try {
+    console.log('Pinging server to keep it awake...');
+    // Change this to your actual server's public URL
+    await axios.get('https://backflow.onrender.com/');
+    console.log('Server pinged successfully');
+  } catch (error) {
+    console.error('Error pinging the server:', error.message);
+  }
+});
+
 
   const connectDB = () => {
     mongoose.set("strictQuery", true);
